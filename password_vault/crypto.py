@@ -20,6 +20,6 @@ class HashedPassword(object):
 
 def derive_from_password(password: str) -> HashedPassword:
     """Given a password, generate a cryptographically secure 256-bit key from it"""
-    hash_result = pbkdf2_sha256.using(rounds=50000, salt_size=64).hash(password)
+    hash_result = pbkdf2_sha256.using(rounds=50000, salt_size=32).hash(password)
 
     return HashedPassword(hash_result)
