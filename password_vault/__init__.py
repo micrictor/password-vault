@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import getpass
 import io
+import json
 import sys
 
 from typing import Dict
@@ -8,7 +9,8 @@ from typing import Dict
 import argparse
 import cmd2
 
-from password_vault.crypto import derive_from_password, EncryptedVault, HashedPassword
+from password_vault.crypto import derive_from_password, HashedPassword
+from password_vault.fileformat import VaultFile
 
 class PasswordVault(cmd2.Cmd):
     """The command-line interface for our password vault.
@@ -35,10 +37,22 @@ class PasswordVault(cmd2.Cmd):
 
     def _get_vault_password(self) -> HashedPassword:
         password = ""
-        password = getpass.getpass("Password for the vault...\n")
-        while len(password) < 8:
-            print(f"Error! Password must be 8+ characters, got {len(password)}")
-            password = getpass.getpass("Password for the vault...")
+        for _ in range(0,3):
+            password = getpass.getpass("Password for the vault: ")
+            if len(password) < 8:
+                print(f"Error! Password must be 8+ characters, got {len(password)}")
+                password = getpass.getpass("Password for the vault: ")
+                continue
+
+            second_password = getpass.getpass("Re-enter the password: ")
+            if password != second_password:
+                print("\nPasswords do not match!\n")
+                second_password = ""
+                continue
+            else:
+                break
+        else:
+            raise RuntimeError("Failed password prompt too many times!")
 
         self.vault_password = derive_from_password(password)
         return self.vault_password
@@ -62,22 +76,19 @@ class PasswordVault(cmd2.Cmd):
         """Load a password vault from the specified file"""
         password = getpass.getpass("Vault password: ")
         self.vault_file_name = args.filename
-        with open(self.vault_file_name, "rb") as source_file:
-            vault_handler = EncryptedVault(file_handle=source_file)
-            self.vault_database = vault_handler.read(vault_password=password)
+        source_file = VaultFile(self.vault_file_name, "rb+")
+        file_contents = source_file.read(password=password)
+        self.vault_password = source_file.hashed_password
+        self.vault_database = json.loads(file_contents)
 
         self.enable_category(self.GET_SET_CATEGORY)
 
     @cmd2.with_category(GET_SET_CATEGORY)
     def do_save(self, args):
         """Save the password vault. Also done automatically."""
-        with open(self.vault_file_name, "wb+") as destination_file:
-            vault_handler = EncryptedVault(file_handle=destination_file)
-            vault_handler.write(
-                hash_salt=self.vault_password.salt,
-                key_bytes=self.vault_password.derived_key, 
-                vault_database=self.vault_database
-            )
+        destination_file = VaultFile(self.vault_file_name, "wb+")
+        stream_to_write = json.dumps(self.vault_database).encode("utf-8")
+        destination_file.write(stream_to_write, self.vault_password)
 
     def exithook(self) -> None:
         if self.vault_database is not None:
