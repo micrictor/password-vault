@@ -35,7 +35,7 @@ class PasswordVault(cmd2.Cmd):
 
     def _get_vault_password(self) -> HashedPassword:
         password = ""
-        password = getpass.getpass("Password for the vault...")
+        password = getpass.getpass("Password for the vault...\n")
         while len(password) < 8:
             print(f"Error! Password must be 8+ characters, got {len(password)}")
             password = getpass.getpass("Password for the vault...")
@@ -60,25 +60,28 @@ class PasswordVault(cmd2.Cmd):
     @cmd2.with_argparser(load_argparser)
     def do_load(self, args):
         """Load a password vault from the specified file"""
-        self._get_vault_password()
+        password = getpass.getpass("Vault password: ")
         self.vault_file_name = args.filename
-
-        vault_handler = EncryptedVault(vault_file_name=self.vault_file_name, is_read=True)
-        self.vault_database = vault_handler.read(key_bytes=self.vault_password.derived_key)
+        with open(self.vault_file_name, "rb") as source_file:
+            vault_handler = EncryptedVault(file_handle=source_file)
+            self.vault_database = vault_handler.read(vault_password=password)
 
         self.enable_category(self.GET_SET_CATEGORY)
 
     @cmd2.with_category(GET_SET_CATEGORY)
     def do_save(self, args):
         """Save the password vault. Also done automatically."""
-        vault_handler = EncryptedVault(vault_file_name=self.vault_file_name)
-        vault_handler.write(
-            key_bytes=self.vault_password.derived_key, 
-            vault_database=self.vault_database
-        )
+        with open(self.vault_file_name, "wb+") as destination_file:
+            vault_handler = EncryptedVault(file_handle=destination_file)
+            vault_handler.write(
+                hash_salt=self.vault_password.salt,
+                key_bytes=self.vault_password.derived_key, 
+                vault_database=self.vault_database
+            )
 
     def exithook(self) -> None:
-        self.do_save({})
+        if self.vault_database is not None:
+            self.do_save({})
 
     set_argparser = argparse.ArgumentParser()
     set_argparser.add_argument("hostname", type=str)
