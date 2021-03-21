@@ -22,7 +22,7 @@ def test_derive_from_password():
 def test_hashed_password():
     """Test that the HashedPassword class is properly parsing the returned strings"""
 
-    test_hash = "$pbkdf2-sha256$50000$kfL.//8fQ8j5f48RIuRcKwVAqHWOcU6ptXZOKWVszdl7z1lrba0VIsRYyzln7B3jvPceo5TSWqu1NmYs5Xxv7Q$zYPVbRZMmpqpajtAzImxhBVPNRF9UnlEl7/WxjJDQMg"  # noqa
+    test_hash = "$pbkdf2-sha256$50000$kfL.//8fQ8j5f48RIuRcKwVAqHWOcU6ptXZOKWVszdk$zYPVbRZMmpqpajtAzImxhBVPNRF9UnlEl7/WxjJDQMg"  # noqa
 
     test_object = HashedPassword(test_hash)
 
