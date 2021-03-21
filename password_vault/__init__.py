@@ -118,6 +118,11 @@ class PasswordVault(cmd2.Cmd):
         
         print(f"\n\n{password}\n\n")
 
+    @cmd2.with_category(GET_SET_CATEGORY)
+    def do_dump(self, args):
+        for site, password in self.vault_database.items():
+            print(f"Website: {site}\tPassword: {password}")
+
 
 if __name__ == "__main__":
     vault = PasswordVault()
