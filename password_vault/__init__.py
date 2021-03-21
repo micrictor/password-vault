@@ -33,6 +33,11 @@ class PasswordVault(cmd2.Cmd):
         self.prompt = "vault > "
         self.do_exit = self.do_quit
         self.register_postloop_hook(self.exithook)
+        self.intro = cmd2.style(
+            "Welcome to the password vault!\nTo start, either `create` or `load` a vault.",
+            fg=cmd2.fg.white,
+            bold=True
+        )
         self.disable_category(self.GET_SET_CATEGORY, "Must create or load database first")
 
     def _get_vault_password(self) -> HashedPassword:
@@ -91,7 +96,7 @@ class PasswordVault(cmd2.Cmd):
         destination_file.write(stream_to_write, self.vault_password)
 
     def exithook(self) -> None:
-        if self.vault_database is not None:
+        if self.__getattribute__("vault_database") is not None:
             self.do_save({})
 
     set_argparser = argparse.ArgumentParser()
