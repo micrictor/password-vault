@@ -128,6 +128,13 @@ class PasswordVault(cmd2.Cmd):
         
         print(f"\n\n{password}\n\n")
 
+    def complete_get_password(self, text, line, begidx, endidx):
+        possible_sites = list(self.vault_database.keys())
+        if not text:
+            return possible_sites
+   
+        return [site for site in possible_sites if site.startswith(text)]
+
     @cmd2.with_category(GET_SET_CATEGORY)
     def do_dump(self, args):
         for site, password in self.vault_database.items():
