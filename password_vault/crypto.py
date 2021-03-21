@@ -27,5 +27,5 @@ def derive_from_password(password: str, salt: Optional[bytes] = None) -> HashedP
     if not salt:
         hash_result = pbkdf2_sha256.using(rounds=50000, salt_size=32).hash(password)
     else:
-        hash_result = pbkdf2_sha256.using(rounds=50000, salt_size=32).hash(password)
+        hash_result = pbkdf2_sha256.using(rounds=50000, salt=salt).hash(password)
     return HashedPassword(hash_result)

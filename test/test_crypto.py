@@ -19,6 +19,16 @@ def test_derive_from_password():
         last_result = result
 
 
+def test_derive_from_password_specified_salt():
+    """Test that, when given a specific salt, the same password results in the same key"""
+    salt = bytes("".join([chr(c) for c in range(0,32)]), encoding="utf-8")
+
+    result_one = derive_from_password("password1234", salt=salt)
+    result_two = derive_from_password("password1234", salt=salt)
+
+    assert result_one.derived_key == result_two.derived_key
+
+
 def test_hashed_password():
     """Test that the HashedPassword class is properly parsing the returned strings"""
 
