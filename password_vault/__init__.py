@@ -88,6 +88,8 @@ class PasswordVault(cmd2.Cmd):
 
         self.enable_category(self.GET_SET_CATEGORY)
 
+    complete_load = cmd2.Cmd.path_complete
+
     @cmd2.with_category(GET_SET_CATEGORY)
     def do_save(self, args):
         """Save the password vault. Also done automatically."""
@@ -96,8 +98,11 @@ class PasswordVault(cmd2.Cmd):
         destination_file.write(stream_to_write, self.vault_password)
 
     def exithook(self) -> None:
-        if self.__getattribute__("vault_database") is not None:
-            self.do_save({})
+        try:
+            if self.vault_database is not None:
+                self.do_save({})
+        except AttributeError:
+            pass
 
     set_argparser = argparse.ArgumentParser()
     set_argparser.add_argument("hostname", type=str)
