@@ -37,11 +37,11 @@ class EncryptedVault(object):
     """Handles encryption/decryption of the password vault files"""
     file_handle: io.IOBase
 
-    IV_LENGTH: int = 32  # 32 bytes == 256 bit IV, should be 2x larger than strictly needed
+    IV_LENGTH: int = 16  # 16 bytes == 128 bit IV, same as block size
     PADDING_LENGTH: int = 128  # AES uses 128-bit blocks, requiring we pad to the same
 
-    def __init__(self, *, vault_file_name: str):
-        self.file_handle = open(vault_file_name, "w+")
+    def __init__(self, *, vault_file_name: str, is_read: bool = False):
+        self.file_handle = open(vault_file_name, f"{'r' if is_read else 'w'}b+")
 
     def _pad_input(self, input_bytes: bytes) -> bytes:
         padder = padding.PKCS7(self.PADDING_LENGTH).padder()
@@ -55,7 +55,7 @@ class EncryptedVault(object):
         return iv + encrypted_content
 
     def write(self, *, key_bytes: bytes, vault_database: Dict[str, str]):
-        input_string = json.dumps(vault_database)
+        input_string = json.dumps(vault_database).encode("utf-8")
         input_string = self._pad_input(input_string)
         encrypted_stream = self._encrypt_stream(input_string, key_bytes)
         self.file_handle.write(encrypted_stream)
@@ -74,7 +74,8 @@ class EncryptedVault(object):
     def read(self, *, key_bytes: bytes) -> Dict[str, str]:
         """Read a database file and return a vault-like Dict"""
         content_stream = self.file_handle.read()
+        print(content_stream)
         decrypted_content = self._decrypt_stream(content_stream, key_bytes)
         unpadded_content = self._unpad_input(decrypted_content)
 
-        return json.loads(unpadded_content)
+        return json.loads(decrypted_content.decode("utf-8"))
