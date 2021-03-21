@@ -6,7 +6,7 @@ def test_derive_from_password():
     """Test that, even with the exact same password, we get different hashes every time"""
 
     results = []
-    for i in range(0, 100):
+    for _ in range(0, 100):
         results.append(derive_from_password("password1234"))
 
     last_result = None
