@@ -67,8 +67,8 @@ class EncryptedVault(object):
     def write(self, *, hash_salt: bytes, key_bytes: bytes, vault_database: Dict[str, str]):
         input_string = json.dumps(vault_database).encode("utf-8")
         input_string = self._pad_input(input_string)
-        self.logger(f"PBKDF2 salt: {hash_salt.__repr__()}")
-        self.logger(f"AES key: {key_bytes.__repr__()}")
+        self.logger.debug(f"PBKDF2 salt: {hash_salt.__repr__()}")
+        self.logger.debug(f"AES key: {key_bytes.__repr__()}")
         encrypted_stream = hash_salt + self._encrypt_stream(input_string, key_bytes)
         self.logger.info(f"Writing encrypted stream to {self.file_handle.name}")
         self.file_handle.write(encrypted_stream)
