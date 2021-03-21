@@ -1,8 +1,9 @@
 import io
 import json
+import logging
 import os
 
-from typing import Dict
+from typing import Dict, Optional
 
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -26,10 +27,14 @@ class HashedPassword(object):
         self.derived_key = ab64_decode(checksum)
 
 
-def derive_from_password(password: str) -> HashedPassword:
-    """Given a password, generate a cryptographically secure 256-bit key from it"""
-    hash_result = pbkdf2_sha256.using(rounds=50000, salt_size=32).hash(password)
-
+def derive_from_password(password: str, salt: Optional[bytes] = None) -> HashedPassword:
+    """Given a password, generate a cryptographically secure 256-bit key from it.
+    Optionally, specify a salt to use.
+    """
+    if not salt:
+        hash_result = pbkdf2_sha256.using(rounds=50000, salt_size=32).hash(password)
+    else:
+        hash_result = pbkdf2_sha256.using(rounds=50000, salt_size=32).hash(password)
     return HashedPassword(hash_result)
 
 
@@ -37,11 +42,16 @@ class EncryptedVault(object):
     """Handles encryption/decryption of the password vault files"""
     file_handle: io.IOBase
 
+    logger = logging.getLogger("crypto.EncryptedVault")
     IV_LENGTH: int = 16  # 16 bytes == 128 bit IV, same as block size
     PADDING_LENGTH: int = 128  # AES uses 128-bit blocks, requiring we pad to the same
 
-    def __init__(self, *, vault_file_name: str, is_read: bool = False):
-        self.file_handle = open(vault_file_name, f"{'r' if is_read else 'w'}b+")
+    def __init__(self, *, file_handle: io.IOBase):
+        self.file_handle = file_handle
+
+        if os.environ.get("user", "") == "mtu":
+            print("Unsafely logging crypto parameters enabled")
+            self.logger.setLevel(logging.DEBUG)
 
     def _pad_input(self, input_bytes: bytes) -> bytes:
         padder = padding.PKCS7(self.PADDING_LENGTH).padder()
@@ -54,10 +64,13 @@ class EncryptedVault(object):
         encrypted_content = encryptor.update(input_bytes) + encryptor.finalize()
         return iv + encrypted_content
 
-    def write(self, *, key_bytes: bytes, vault_database: Dict[str, str]):
+    def write(self, *, hash_salt: bytes, key_bytes: bytes, vault_database: Dict[str, str]):
         input_string = json.dumps(vault_database).encode("utf-8")
         input_string = self._pad_input(input_string)
-        encrypted_stream = self._encrypt_stream(input_string, key_bytes)
+        self.logger(f"PBKDF2 salt: {hash_salt.__repr__()}")
+        self.logger(f"AES key: {key_bytes.__repr__()}")
+        encrypted_stream = hash_salt + self._encrypt_stream(input_string, key_bytes)
+        self.logger.info(f"Writing encrypted stream to {self.file_handle.name}")
         self.file_handle.write(encrypted_stream)
 
     def _decrypt_stream(self, input_bytes: bytes, key_bytes: bytes):
@@ -71,11 +84,15 @@ class EncryptedVault(object):
         padder = padding.PKCS7(self.PADDING_LENGTH).unpadder()
         return padder.update(input_bytes) + padder.finalize()
 
-    def read(self, *, key_bytes: bytes) -> Dict[str, str]:
+    def read(self, *, vault_password: str) -> Dict[str, str]:
         """Read a database file and return a vault-like Dict"""
         content_stream = self.file_handle.read()
-        print(content_stream)
-        decrypted_content = self._decrypt_stream(content_stream, key_bytes)
+        salt = content_stream[:32]
+        content_stream = content_stream[32:]
+        self.logger.debug(f"Salt: {salt.__repr__()}")
+        hashed_password = derive_from_password(vault_password, salt)
+        self.logger.debug(f"Key: {hashed_password.derived_key.__repr__()}")
+        decrypted_content = self._decrypt_stream(content_stream, hashed_password.derived_key)
         unpadded_content = self._unpad_input(decrypted_content)
 
         return json.loads(decrypted_content.decode("utf-8"))
