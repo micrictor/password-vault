@@ -37,3 +37,5 @@ The vault file starts with a 32-byte salt used to derive the key from a password
 Bytes 0-31: PBKDF2_SHA256 salt; Used to derive a key from a password
 Bytes 32-47: 16-byte IV used for AES256-CBC
 Bytes 48-EOF: Raw encrypted bytes
+
+![demo GIF](resource/passwordvault.gif)
