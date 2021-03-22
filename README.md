@@ -35,7 +35,10 @@ Command-line interface built in [Cmd2](https://cmd2.readthedocs.io/en/latest/).
 The vault file starts with a 32-byte salt used to derive the key from a password. This is immediately followed by the 16-byte IV used to encrypt the vault, then the AES256 encrypted bytes.
 
 Bytes 0-31: PBKDF2_SHA256 salt; Used to derive a key from a password
+
 Bytes 32-47: 16-byte IV used for AES256-CBC
+
 Bytes 48-EOF: Raw encrypted bytes
 
-![demo GIF](resource/passwordvault.gif)
+
+![](resource/passwordvault.gif)
