@@ -140,7 +140,6 @@ class PasswordVault(cmd2.Cmd):
         for site, password in self.vault_database.items():
             print(f"Website: {site}\tPassword: {password}")
 
-
-if __name__ == "__main__":
+def main():
     vault = PasswordVault()
     sys.exit(vault.cmdloop())

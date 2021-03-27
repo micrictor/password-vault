@@ -46,4 +46,10 @@ setup(
         'wcwidth==0.2.5',
         'wrapt==1.12.1',
     ],
+
+    entry_points = {
+        "console_scripts": [
+            "password-vault = password_vault:main"
+        ]
+    }
 )
