@@ -5,6 +5,16 @@ A simple password vault in Python3. THIS SHOULD NOT BE USED FOR REAL DATA
 
 This is a simple password vault, implemented in Python 3. It was written for the purpose of the Cryptography class in the Master's of Science in Cybersecurity Engineering at University of San Diego. As such, I highly reccommend that you do _not_ use this for any real passwords. On top of the fact that I wrote this in a single weekend, there are much more feature rich password managers available at no cost. Use one of those.
 
+### Installation
+
+The simplest way to install this package is to clone it, then use `pip` to install the `whl` file in `dist/`.
+
+```
+git clone https://github.com/micrictor/password-vault.git
+python3 -m pip install password-vault/dist/password_vault-1.0.0-py3-none-any.whl
+```
+
+Then, to run the vault, you can simply run `password-vault`.
 
 ## System Objectives
 
