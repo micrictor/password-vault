@@ -34,7 +34,7 @@ class VaultFile(object):
         cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
         decryptor = cipher.decryptor()
         decrypted_content = decryptor.update(input_bytes[self.IV_LENGTH:]) + decryptor.finalize()
-        return decrypted_content
+        return self._unpadder(decrypted_content)
 
     def _encrypt(self, input_bytes: bytes, key: bytes):
         iv = os.urandom(self.IV_LENGTH)
@@ -49,7 +49,7 @@ class VaultFile(object):
         hash_salt = file_contents[:self.SALT_LENGTH]
         self.hashed_password = derive_from_password(password=password, salt=hash_salt)
         decrypted_content = self._decrypt(file_contents[self.SALT_LENGTH:], self.hashed_password.derived_key)
-        return self._unpadder(decrypted_content)
+        return decrypted_content
 
     def write(self, input_stream: bytes, hashed_password: HashedPassword):
         self.file_handle.write(hashed_password.salt)
