@@ -14,7 +14,14 @@ git clone https://github.com/micrictor/password-vault.git
 python3 -m pip install password-vault/dist/password_vault-1.0.0-py3-none-any.whl
 ```
 
-Then, to run the vault, you can simply run `password-vault`.
+Alternatively, you can install the package using `setuptools`:
+```
+git clone https://github.com/micrictor/password-vault.git
+cd password-vault
+python3 setup.py install
+```
+
+Once installed, run the vault with the command `password-vault`.
 
 ## System Objectives
 
