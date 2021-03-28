@@ -2,6 +2,7 @@ astroid==2.5.1
 attrs==20.3.0
 cffi==1.14.5
 cmd2==1.5.0
+cmd2-ext-test==0.2.0
 colorama==0.4.4
 coverage==5.5
 cryptography==3.4.6
@@ -11,6 +12,7 @@ lazy-object-proxy==1.5.2
 mccabe==0.6.1
 packaging==20.9
 passlib==1.7.4
+-e git+https://github.com/micrictor/password-vault@df5b71dbe1c57d3f93040cbe7f58ff2af19234d2#egg=password_vault
 pluggy==0.13.1
 py==1.10.0
 pycparser==2.20
