@@ -12,7 +12,7 @@ lazy-object-proxy==1.5.2
 mccabe==0.6.1
 packaging==20.9
 passlib==1.7.4
--e git+https://github.com/micrictor/password-vault@df5b71dbe1c57d3f93040cbe7f58ff2af19234d2#egg=password_vault
+-e git+https://github.com/micrictor/password-vault@b5bcf717d4b5b6506aab47506db16994a260c962#egg=password_vault
 pluggy==0.13.1
 py==1.10.0
 pycparser==2.20
