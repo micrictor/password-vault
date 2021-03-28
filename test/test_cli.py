@@ -74,3 +74,32 @@ def test_cli_load(mock_getpass, mock_vaultfile_class, password_vault):
     assert password_vault.vault_file_name == "test_filename"
     mock_vaultfile_class.assert_called_once_with("test_filename", "rb+")
     mock_vaultfile.read.assert_called_once_with(password="test_password")
+
+@mock.patch("password_vault.getpass.getpass")
+def test_cli_set_password(mock_getpass, password_vault):
+    mock_getpass.return_value = "fakepassword"
+    password_vault.vault_database = {}
+    password_vault.enable_category(password_vault.GET_SET_CATEGORY)
+
+    out = password_vault.app_cmd("set_password test.com")
+    
+    assert password_vault.vault_database["test.com"] == "fakepassword"
+
+
+def test_cli_get_password(password_vault):
+    password_vault.vault_database = {"test.com": "1234"}
+    password_vault.enable_category(password_vault.GET_SET_CATEGORY)
+
+    out = password_vault.app_cmd("get_password test.com")
+    
+    assert "1234" in out.stdout
+
+
+def test_cli_get_password_fail(password_vault):
+    password_vault.vault_database = {"test.com": "1234"}
+    password_vault.enable_category(password_vault.GET_SET_CATEGORY)
+
+    out = password_vault.app_cmd("get_password notasite.com")
+    
+    assert "1234" not in out.stdout
+    assert out.stdout.startswith("No password found")
