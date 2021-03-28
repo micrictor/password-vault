@@ -59,7 +59,7 @@ def test_encrypt(mock_aes, mock_cbc, mock_cipher, mock_vault_file):
     mock_cipher_object = mock_cipher.return_value
     mock_encryptor = mock_cipher_object.encryptor.return_value
     mock_vault_file._padder = mock.MagicMock(side_effect=lambda x: x)  # Disable padding
-    result = mock_vault_file._encrypt(b'test input', b'test key')
+    mock_vault_file._encrypt(b'test input', b'test key')
 
     mock_vault_file._padder.assert_called_once()
     mock_cbc.assert_called_once()
