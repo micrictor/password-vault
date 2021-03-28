@@ -78,3 +78,35 @@ def test_integ_encrypt_decrypt(mock_vault_file):
     decrypt_result = mock_vault_file._decrypt(ciphertext, key)
 
     assert plaintext == decrypt_result
+
+
+@mock.patch("password_vault.fileformat.derive_from_password")
+def test_read(mock_derive, mock_vault_file):
+    salt = b'A' * mock_vault_file.SALT_LENGTH
+    iv = b'B' * mock_vault_file.IV_LENGTH
+    ciphertext = b'C' * 128
+    mock_vault_file.file_handle.read.return_value = salt + iv + ciphertext
+    mock_derive.return_value = mock.MagicMock(derived_key=b'D'*(256//8))
+    mock_vault_file._decrypt = mock.MagicMock()
+
+    result = mock_vault_file.read("test password")
+
+    mock_vault_file.file_handle.read.assert_called_once()
+    mock_derive.assert_called_once_with(password="test password", salt=salt)
+    mock_vault_file._decrypt.assert_called_once_with(iv + ciphertext, b'D'*(256//8))
+    assert result == mock_vault_file._decrypt.return_value
+
+
+def test_write(mock_vault_file):
+    mock_password = mock.MagicMock(salt=b'A'*mock_vault_file.SALT_LENGTH, derived_key=b'B'*(256//8))
+    mock_vault_file._encrypt = mock.MagicMock()
+
+    mock_vault_file.write(b'test stream', mock_password)
+
+    mock_vault_file._encrypt.assert_called_once_with(b'test stream', mock_password.derived_key)
+    assert mock_vault_file.file_handle.write.call_count == 2
+    expected_calls = [
+        mock.call.write(mock_password.salt),
+        mock.call.write(mock_vault_file._encrypt.return_value)
+    ]
+    mock_vault_file.file_handle.assert_has_calls(expected_calls)
