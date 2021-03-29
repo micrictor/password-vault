@@ -103,3 +103,15 @@ def test_cli_get_password_fail(password_vault):
     
     assert "1234" not in out.stdout
     assert out.stdout.startswith("No password found")
+
+
+def test_cli_get_complete(password_vault):
+    password_vault.vault_database = {"key0": "a", "key1": "b", "2key": "c"}
+    password_vault.enable_category(password_vault.GET_SET_CATEGORY)
+    
+    blank_complete = password_vault.complete_get_password("", 0, 0, 0)
+    assert len(blank_complete) == 3
+    assert isinstance(blank_complete, list)
+
+    prefix_complete = password_vault.complete_get_password("key", 0, 0, 0)
+    assert prefix_complete == ["key0", "key1"]
