@@ -42,9 +42,19 @@ def test_get_password_success(mock_getpass, password_vault):
 
 
 @mock.patch("password_vault.getpass.getpass")
-def test_get_password_fail(mock_getpass, password_vault):
+def test_get_password_fail_no_match(mock_getpass, password_vault):
     with pytest.raises(RuntimeError):
         mock_getpass.side_effect = ["hunter123", "123hunter"] * 3
+
+        password_vault._get_vault_password()
+
+        assert mock_getpass.call_count == 6
+
+
+@mock.patch("password_vault.getpass.getpass")
+def test_get_password_fail_too_short(mock_getpass, password_vault):
+    with pytest.raises(RuntimeError):
+        mock_getpass.side_effect = ["hunter"] * 3
 
         password_vault._get_vault_password()
 

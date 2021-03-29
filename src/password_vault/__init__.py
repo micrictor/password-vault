@@ -45,8 +45,7 @@ class PasswordVault(cmd2.Cmd):
         for _ in range(0,3):
             password = getpass.getpass("Password for the vault: ")
             if len(password) < 8:
-                print(f"Error! Password must be 8+ characters, got {len(password)}")
-                password = getpass.getpass("Password for the vault: ")
+                print(f"Error! Password must be 8+ characters, got {len(password)}\ns")
                 continue
 
             second_password = getpass.getpass("Re-enter the password: ")
